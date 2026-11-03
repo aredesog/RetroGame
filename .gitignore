@@ -1,0 +1,27 @@
+# ===== .NET =====
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+*.log
+
+# ===== Front-end (Node / Vite) =====
+node_modules/
+dist/
+.vite/
+
+# ===== Configuração local e segredos =====
+# A connection string fica em dotnet user-secrets (fora do repositório).
+# Estas linhas evitam versionar um arquivo de ambiente por engano.
+.env
+.env.*
+appsettings.*.local.json
+
+# ===== Editores e sistema =====
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
