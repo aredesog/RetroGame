@@ -17,6 +17,7 @@ dist/
 # Estas linhas evitam versionar um arquivo de ambiente por engano.
 .env
 .env.*
+!.env.example
 appsettings.*.local.json
 
 # ===== Editores e sistema =====
