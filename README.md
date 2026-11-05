@@ -32,7 +32,7 @@ O escopo atual é o **Módulo de Catálogo e Administração**.
 O back-end segue arquitetura em camadas:
 
 ```
-Controller → Service → Repository → MySQL
+Controller → Service → Repository → MySQL(Testes feitos)
 ```
 
 - **Controller:** recebe a requisição e devolve a resposta.
