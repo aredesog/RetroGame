@@ -49,6 +49,24 @@ public abstract class RepositoryBase
     }
 
     /// <summary>
+    /// Adiciona um parâmetro para cada valor da lista (@prefixo0, @prefixo1, ...)
+    /// e devolve os nomes separados por vírgula, para usar em "IN (...)".
+    /// Só os nomes dos parâmetros entram no SQL; os valores continuam como parâmetros.
+    /// </summary>
+    protected static string AdicionarParametrosLista(MySqlCommand comando, string prefixo, IEnumerable<int> valores)
+    {
+        var nomes = new List<string>();
+        var indice = 0;
+        foreach (var valor in valores)
+        {
+            var nome = $"@{prefixo}{indice++}";
+            AdicionarParametro(comando, nome, valor);
+            nomes.Add(nome);
+        }
+        return string.Join(", ", nomes);
+    }
+
+    /// <summary>
     /// Executa uma gravação (INSERT ou UPDATE) e devolve o número de linhas afetadas.
     /// É o único lugar que converte o erro 1062 em RegistroDuplicadoException.
     /// </summary>
