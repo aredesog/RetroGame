@@ -6,8 +6,9 @@ O escopo atual é o **Módulo de Catálogo e Administração**.
 
 ## O que vai ser feito
 
-- [ ] Estrutura da solução (.NET) e do front-end (React)
-- [ ] Banco de dados MySQL: tabelas de plataforma, gênero, jogo, condição, perfil e usuário
+- [x] Estrutura da solução (.NET) e do front-end (React)
+- [x] Banco de dados MySQL: tabelas de plataforma, gênero, jogo, condição, perfil e usuário
+- [x] Camada Repository (acesso a dados com ADO.NET)
 - [ ] Autenticação e autorização do perfil Administrador (sessão por cookie e proteção CSRF)
 - [ ] Manutenção de plataformas (incluir, consultar, alterar e excluir)
 - [ ] Consulta de gêneros e de condições de jogo
@@ -32,7 +33,7 @@ O escopo atual é o **Módulo de Catálogo e Administração**.
 O back-end segue arquitetura em camadas:
 
 ```
-Controller → Service → Repository → MySQL(Testes feitos)
+Controller → Service → Repository → MySQL
 ```
 
 - **Controller:** recebe a requisição e devolve a resposta.
@@ -50,7 +51,7 @@ Todas as respostas da API usam o mesmo formato:
 Pré-requisitos: .NET SDK 10, Node.js 22 LTS e MySQL 8.
 
 1. Criar o banco com os scripts da pasta `database/`.
-2. Configurar a connection string e o administrador inicial com `dotnet user-secrets` no projeto `RetroGames.WebApi`.
+2. Copiar `.env.example` para `.env` na raiz e trocar `SUA_SENHA` pela senha do MySQL. O `.env` não é versionado.
 3. Rodar a API: `dotnet run` em `RetroGames.WebApi` (porta 5080, Swagger em `/swagger`).
 4. Rodar o front-end: `npm install` e `npm run dev` em `retrogames.web` (porta 5173).
 5. Rodar os testes: `dotnet test` na raiz.
