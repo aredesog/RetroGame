@@ -191,3 +191,14 @@ DELETE FROM tb_jogo_genero WHERE co_jogo = @idTeste;
 -- Limpeza do teste (só aqui, no Workbench: o Repository nunca apaga jogo)
 DELETE FROM tb_jogo WHERE co_seq_jogo = @idTeste;
 SELECT COUNT(*) AS deve_ser_zero FROM tb_jogo WHERE no_jogo LIKE 'Jogo Teste%';
+
+
+-- =====================================================================
+-- ETAPA 5 · GeneroRepository e CondicaoJogoRepository (somente leitura)
+-- =====================================================================
+
+-- Listar gêneros, ordenados por nome: esperado 9 linhas (Ação ... Tiro)
+SELECT co_seq_genero, no_genero FROM tb_genero ORDER BY no_genero;
+
+-- Listar condições de jogo: esperado 3 linhas (1 Novo, 2 Usado, 3 Recondicionado)
+SELECT co_condicao_jogo, ds_condicao_jogo FROM tb_condicao_jogo ORDER BY co_condicao_jogo;
