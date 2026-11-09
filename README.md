@@ -9,6 +9,7 @@ O escopo atual é o **Módulo de Catálogo e Administração**.
 - [x] Estrutura da solução (.NET) e do front-end (React)
 - [x] Banco de dados MySQL: tabelas de plataforma, gênero, jogo, condição, perfil e usuário
 - [x] Camada Repository (acesso a dados com ADO.NET)
+- [x] Camada Service (regras de negócio, catálogo de erros e composição com LINQ)
 - [ ] Autenticação e autorização do perfil Administrador (sessão por cookie e proteção CSRF)
 - [ ] Manutenção de plataformas (incluir, consultar, alterar e excluir)
 - [ ] Consulta de gêneros e de condições de jogo
