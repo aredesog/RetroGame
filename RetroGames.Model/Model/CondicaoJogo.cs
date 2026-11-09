@@ -1,11 +1,8 @@
 namespace RetroGames.Model.Model;
 
-/// <summary>Tabela tb_condicao_jogo (domínio, chave fixa).</summary>
+// Tabela tb_condicao_jogo (domínio: a chave é fixa, não é gerada pelo banco)
 public class CondicaoJogo
 {
-    /// <summary>co_condicao_jogo</summary>
-    public int Id { get; set; }
-
-    /// <summary>ds_condicao_jogo</summary>
-    public string Descricao { get; set; } = string.Empty;
+    public int Id { get; set; }                               // co_condicao_jogo
+    public string Descricao { get; set; } = string.Empty;     // ds_condicao_jogo
 }

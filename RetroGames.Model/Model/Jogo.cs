@@ -1,35 +1,16 @@
 namespace RetroGames.Model.Model;
 
-/// <summary>Tabela tb_jogo.</summary>
+// Tabela tb_jogo
 public class Jogo
 {
-    /// <summary>co_seq_jogo</summary>
-    public int Id { get; set; }
-
-    /// <summary>no_jogo</summary>
-    public string Nome { get; set; } = string.Empty;
-
-    /// <summary>ds_jogo (opcional)</summary>
-    public string? Descricao { get; set; }
-
-    /// <summary>nu_ano_lancamento</summary>
-    public int AnoLancamento { get; set; }
-
-    /// <summary>vl_preco</summary>
-    public decimal Preco { get; set; }
-
-    /// <summary>qt_estoque</summary>
-    public int Estoque { get; set; }
-
-    /// <summary>st_ativo</summary>
-    public bool Ativo { get; set; }
-
-    /// <summary>dt_cadastro (UTC)</summary>
-    public DateTime DataCadastro { get; set; }
-
-    /// <summary>co_plataforma</summary>
-    public int IdPlataforma { get; set; }
-
-    /// <summary>co_condicao_jogo</summary>
-    public int IdCondicaoJogo { get; set; }
+    public int Id { get; set; }                               // co_seq_jogo
+    public string Nome { get; set; } = string.Empty;          // no_jogo
+    public string? Descricao { get; set; }                    // ds_jogo (única coluna opcional)
+    public int AnoLancamento { get; set; }                    // nu_ano_lancamento
+    public decimal Preco { get; set; }                        // vl_preco
+    public int Estoque { get; set; }                          // qt_estoque
+    public bool Ativo { get; set; }                           // st_ativo
+    public DateTime DataCadastro { get; set; }                // dt_cadastro (UTC)
+    public int IdPlataforma { get; set; }                     // co_plataforma
+    public int IdCondicaoJogo { get; set; }                   // co_condicao_jogo
 }

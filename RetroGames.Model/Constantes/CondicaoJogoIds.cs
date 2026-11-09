@@ -1,6 +1,6 @@
 namespace RetroGames.Model.Constantes;
 
-/// <summary>Chaves fixas de tb_condicao_jogo (iguais ao script 02_dados_exemplo.sql).</summary>
+// Chaves fixas de tb_condicao_jogo. Precisam ser iguais às inseridas em database/02_dados_exemplo.sql.
 public static class CondicaoJogoIds
 {
     public const int Novo = 1;

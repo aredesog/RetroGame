@@ -2,18 +2,15 @@ using RetroGames.Model.Model;
 
 namespace RetroGames.Repository.Interfaces;
 
-/// <summary>Acesso a dados da tabela tb_jogo_genero (vínculos jogo × gênero).</summary>
 public interface IJogoGeneroRepository
 {
-    /// <summary>Todos os vínculos entre jogos e gêneros.</summary>
     Task<List<JogoGenero>> ListarTodosAsync();
 
-    /// <summary>Os vínculos de uma lista de jogos, numa única consulta.</summary>
+    // Uma única consulta para todos os jogos da lista.
     Task<List<JogoGenero>> ListarPorJogosAsync(IReadOnlyCollection<int> idsJogos);
 
-    /// <summary>Grava os vínculos de um jogo com os seus gêneros.</summary>
     Task InserirAsync(int idJogo, IReadOnlyCollection<int> idsGeneros);
 
-    /// <summary>Apaga os vínculos de um jogo, para regravá-los na alteração.</summary>
+    // Usado na alteração: apaga os vínculos antigos antes de gravar os novos.
     Task RemoverPorJogoAsync(int idJogo);
 }

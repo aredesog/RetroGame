@@ -1,11 +1,8 @@
 namespace RetroGames.Model.Model;
 
-/// <summary>Tabela tb_jogo_genero (associativa, chave primária composta).</summary>
+// Tabela tb_jogo_genero: associação N:N entre jogo e gênero (chave composta)
 public class JogoGenero
 {
-    /// <summary>co_jogo</summary>
-    public int IdJogo { get; set; }
-
-    /// <summary>co_genero</summary>
-    public int IdGenero { get; set; }
+    public int IdJogo { get; set; }                           // co_jogo
+    public int IdGenero { get; set; }                         // co_genero
 }

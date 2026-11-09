@@ -2,10 +2,7 @@ using RetroGames.Model.Model;
 
 namespace RetroGames.Services.ServiceModels;
 
-/// <summary>
-/// Jogo com os dados das outras tabelas, montado com LINQ no JogoService:
-/// nome da plataforma, descrição da condição e gêneros.
-/// </summary>
+// Jogo já combinado com os dados das outras tabelas (montado no JogoService).
 public class JogoDetalheServiceModel
 {
     public Jogo Jogo { get; set; } = new();

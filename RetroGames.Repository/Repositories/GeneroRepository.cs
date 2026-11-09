@@ -3,7 +3,6 @@ using RetroGames.Repository.Interfaces;
 
 namespace RetroGames.Repository.Repositories;
 
-/// <summary>Todo o SQL da tabela tb_genero.</summary>
 public class GeneroRepository : RepositoryBase, IGeneroRepository
 {
     public GeneroRepository(RepositoryConfig config) : base(config)

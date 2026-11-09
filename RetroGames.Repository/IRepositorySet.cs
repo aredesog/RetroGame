@@ -2,10 +2,7 @@ using RetroGames.Repository.Interfaces;
 
 namespace RetroGames.Repository;
 
-/// <summary>
-/// Conjunto de repositórios: um único objeto que dá acesso a todos.
-/// O Service (aula 3) recebe este objeto e usa repositorio.Plataforma, repositorio.Jogo etc.
-/// </summary>
+// Um único objeto com todos os repositórios. O Service recebe só este.
 public interface IRepositorySet
 {
     IPlataformaRepository Plataforma { get; }

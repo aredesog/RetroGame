@@ -1,17 +1,10 @@
 namespace RetroGames.Model.Model;
 
-/// <summary>Tabela tb_plataforma.</summary>
+// Tabela tb_plataforma
 public class Plataforma
 {
-    /// <summary>co_seq_plataforma</summary>
-    public int Id { get; set; }
-
-    /// <summary>no_plataforma</summary>
-    public string Nome { get; set; } = string.Empty;
-
-    /// <summary>no_fabricante</summary>
-    public string Fabricante { get; set; } = string.Empty;
-
-    /// <summary>nu_ano_lancamento</summary>
-    public int AnoLancamento { get; set; }
+    public int Id { get; set; }                               // co_seq_plataforma
+    public string Nome { get; set; } = string.Empty;          // no_plataforma
+    public string Fabricante { get; set; } = string.Empty;    // no_fabricante
+    public int AnoLancamento { get; set; }                    // nu_ano_lancamento
 }

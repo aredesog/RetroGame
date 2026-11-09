@@ -4,7 +4,6 @@ using RetroGames.Repository.Interfaces;
 
 namespace RetroGames.Repository.Repositories;
 
-/// <summary>Todo o SQL da tabela tb_jogo.</summary>
 public class JogoRepository : RepositoryBase, IJogoRepository
 {
     private const string Colunas = """
@@ -24,7 +23,7 @@ public class JogoRepository : RepositoryBase, IJogoRepository
         int pagina,
         int tamanhoPagina)
     {
-        // Lista de ids informada, mas vazia: nenhum jogo pode aparecer.
+        // Lista de ids vazia (ex.: gênero sem jogos): nem consulta o banco, não há resultado.
         if (ids is not null && ids.Count == 0)
         {
             return (new List<Jogo>(), 0);
@@ -32,12 +31,11 @@ public class JogoRepository : RepositoryBase, IJogoRepository
 
         await using var conexao = await AbrirConexaoAsync();
 
-        // 1) Total com o filtro
+        // O total e a página usam o mesmo WHERE, então sempre batem.
         await using var comandoTotal = CriarComando(conexao, string.Empty);
         comandoTotal.CommandText = $"SELECT COUNT(*) FROM tb_jogo {MontarWhere(comandoTotal, busca, idPlataforma, ids, incluirInativos)}";
         var total = Convert.ToInt32(await comandoTotal.ExecuteScalarAsync());
 
-        // 2) Itens da página com o mesmo filtro
         await using var comandoPagina = CriarComando(conexao, string.Empty);
         comandoPagina.CommandText = $"""
             SELECT {Colunas}
@@ -47,7 +45,7 @@ public class JogoRepository : RepositoryBase, IJogoRepository
             LIMIT @limite OFFSET @deslocamento
             """;
         AdicionarParametro(comandoPagina, "@limite", tamanhoPagina);
-        AdicionarParametro(comandoPagina, "@deslocamento", (pagina - 1) * tamanhoPagina);
+        AdicionarParametro(comandoPagina, "@deslocamento", (pagina - 1) * tamanhoPagina); // página 1 começa no 0
 
         var itens = new List<Jogo>();
         await using var leitor = await comandoPagina.ExecuteReaderAsync();
@@ -137,10 +135,9 @@ public class JogoRepository : RepositoryBase, IJogoRepository
         await ExecutarGravacaoAsync(comando);
     }
 
-    /// <summary>
-    /// Monta o WHERE da listagem e adiciona os parâmetros ao comando.
-    /// Usado pela contagem e pela página, para os dois terem o mesmo filtro.
-    /// </summary>
+    // Cada condição tem a forma "(@filtro IS NULL OR coluna = @filtro)":
+    // se o filtro não foi informado, a condição vira sempre verdadeira e é ignorada.
+    // Adiciona os parâmetros no comando recebido e devolve o texto do WHERE.
     private static string MontarWhere(
         MySqlCommand comando,
         string? busca,
@@ -166,9 +163,9 @@ public class JogoRepository : RepositoryBase, IJogoRepository
         return "WHERE " + string.Join(" AND ", condicoes);
     }
 
-    /// <summary>Converte a linha atual do leitor num objeto Jogo, coluna por coluna.</summary>
     private static Jogo Mapear(MySqlDataReader leitor)
     {
+        // ds_jogo aceita NULL: precisa conferir antes de ler como texto.
         var colunaDescricao = leitor.GetOrdinal("ds_jogo");
 
         return new Jogo

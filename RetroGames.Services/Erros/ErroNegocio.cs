@@ -2,8 +2,5 @@ using System.Net;
 
 namespace RetroGames.Services.Erros;
 
-/// <summary>
-/// Um erro de negócio do catálogo: código, mensagem e o status HTTP com que a API vai responder.
-/// HttpStatusCode é só um valor (System.Net); o Service não conhece controller nem HttpContext.
-/// </summary>
+// Um erro do catálogo. O status é só um valor: quem responde HTTP é a API (aula 4).
 public sealed record ErroNegocio(int Codigo, string Mensagem, HttpStatusCode Status);

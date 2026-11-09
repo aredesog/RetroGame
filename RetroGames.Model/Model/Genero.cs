@@ -1,11 +1,8 @@
 namespace RetroGames.Model.Model;
 
-/// <summary>Tabela tb_genero.</summary>
+// Tabela tb_genero
 public class Genero
 {
-    /// <summary>co_seq_genero</summary>
-    public int Id { get; set; }
-
-    /// <summary>no_genero</summary>
-    public string Nome { get; set; } = string.Empty;
+    public int Id { get; set; }                               // co_seq_genero
+    public string Nome { get; set; } = string.Empty;          // no_genero
 }

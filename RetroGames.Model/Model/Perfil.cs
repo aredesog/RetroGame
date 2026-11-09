@@ -1,11 +1,8 @@
 namespace RetroGames.Model.Model;
 
-/// <summary>Tabela tb_perfil (domínio, chave fixa).</summary>
+// Tabela tb_perfil (domínio: a chave é fixa, não é gerada pelo banco)
 public class Perfil
 {
-    /// <summary>co_perfil</summary>
-    public int Id { get; set; }
-
-    /// <summary>ds_perfil</summary>
-    public string Descricao { get; set; } = string.Empty;
+    public int Id { get; set; }                               // co_perfil
+    public string Descricao { get; set; } = string.Empty;     // ds_perfil
 }

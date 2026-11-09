@@ -3,7 +3,6 @@ using RetroGames.Repository.Interfaces;
 
 namespace RetroGames.Repository.Repositories;
 
-/// <summary>Todo o SQL da tabela tb_condicao_jogo.</summary>
 public class CondicaoJogoRepository : RepositoryBase, ICondicaoJogoRepository
 {
     public CondicaoJogoRepository(RepositoryConfig config) : base(config)

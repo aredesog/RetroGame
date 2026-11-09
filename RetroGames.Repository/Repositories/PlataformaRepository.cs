@@ -4,7 +4,6 @@ using RetroGames.Repository.Interfaces;
 
 namespace RetroGames.Repository.Repositories;
 
-/// <summary>Todo o SQL da tabela tb_plataforma.</summary>
 public class PlataformaRepository : RepositoryBase, IPlataformaRepository
 {
     private const string Colunas = "co_seq_plataforma, no_plataforma, no_fabricante, nu_ano_lancamento";
@@ -43,6 +42,8 @@ public class PlataformaRepository : RepositoryBase, IPlataformaRepository
 
     public async Task<bool> ExisteComNomeAsync(string nome, int? idIgnorar = null)
     {
+        // Se @idIgnorar vier preenchido (alteração), a própria plataforma não conta.
+        // SELECT 1 ... LIMIT 1: só importa se existe alguma linha, não quantas.
         const string sql = """
             SELECT 1 FROM tb_plataforma
             WHERE no_plataforma = @nome
@@ -83,7 +84,7 @@ public class PlataformaRepository : RepositoryBase, IPlataformaRepository
         AdicionarParametro(comando, "@anoLancamento", plataforma.AnoLancamento);
 
         await ExecutarGravacaoAsync(comando);
-        return (int)comando.LastInsertedId;
+        return (int)comando.LastInsertedId; // id gerado pelo AUTO_INCREMENT
     }
 
     public async Task AlterarAsync(Plataforma plataforma)
@@ -114,10 +115,10 @@ public class PlataformaRepository : RepositoryBase, IPlataformaRepository
         await using var comando = CriarComando(conexao, sql);
         AdicionarParametro(comando, "@id", id);
 
+        // DELETE não passa por ExecutarGravacaoAsync: o erro 1062 só acontece em INSERT/UPDATE.
         await comando.ExecuteNonQueryAsync();
     }
 
-    /// <summary>Converte a linha atual do leitor num objeto Plataforma, coluna por coluna.</summary>
     private static Plataforma Mapear(MySqlDataReader leitor) => new()
     {
         Id = leitor.GetInt32(leitor.GetOrdinal("co_seq_plataforma")),

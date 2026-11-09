@@ -4,7 +4,6 @@ using RetroGames.Repository.Interfaces;
 
 namespace RetroGames.Repository.Repositories;
 
-/// <summary>Todo o SQL da tabela tb_jogo_genero.</summary>
 public class JogoGeneroRepository : RepositoryBase, IJogoGeneroRepository
 {
     public JogoGeneroRepository(RepositoryConfig config) : base(config)
@@ -46,7 +45,7 @@ public class JogoGeneroRepository : RepositoryBase, IJogoGeneroRepository
         await using var comando = CriarComando(conexao, string.Empty);
         AdicionarParametro(comando, "@idJogo", idJogo);
 
-        // Um único INSERT com uma linha por gênero: (@idJogo, @idGenero0), (@idJogo, @idGenero1)...
+        // Um único INSERT com várias linhas: VALUES (@idJogo, @idGenero0), (@idJogo, @idGenero1), ...
         var linhas = new List<string>();
         var indice = 0;
         foreach (var idGenero in idsGeneros)

@@ -2,10 +2,8 @@ using RetroGames.Repository.Interfaces;
 
 namespace RetroGames.Repository;
 
-/// <summary>
-/// Implementação do conjunto de repositórios.
-/// Recebe cada repositório pelo construtor (injeção de dependência, configurada na aula 4).
-/// </summary>
+// Os repositórios chegam pelo construtor: na API, a injeção de dependência monta tudo;
+// nos testes, cada um pode ser trocado por um mock.
 public class RepositorySet : IRepositorySet
 {
     public RepositorySet(

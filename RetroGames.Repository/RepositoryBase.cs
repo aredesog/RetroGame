@@ -2,13 +2,10 @@ using MySqlConnector;
 
 namespace RetroGames.Repository;
 
-/// <summary>
-/// Base de todos os repositórios: conexão, comando, parâmetros e gravação.
-/// Não contém SQL de nenhuma tabela.
-/// </summary>
+// Base de todos os repositórios: conexão, comando, parâmetros e gravação.
+// Não tem SQL de nenhuma tabela.
 public abstract class RepositoryBase
 {
-    /// <summary>Código do MySQL para valor repetido em coluna UNIQUE.</summary>
     private const int ErroRegistroDuplicado = 1062;
 
     private readonly RepositoryConfig _config;
@@ -18,12 +15,8 @@ public abstract class RepositoryBase
         _config = config;
     }
 
-    /// <summary>
-    /// Abre uma conexão com o banco. Quem chama usa "await using",
-    /// para a conexão ser fechada mesmo em caso de erro.
-    /// Dentro de um TransactionScope aberto pelo Service, a conexão
-    /// participa da transação automaticamente.
-    /// </summary>
+    // Quem chama usa "await using" para a conexão fechar mesmo se der erro.
+    // Se o Service abriu um TransactionScope, a conexão entra nessa transação sozinha.
     protected async Task<MySqlConnection> AbrirConexaoAsync()
     {
         var conexao = new MySqlConnection(_config.ConnectionString);
@@ -31,7 +24,6 @@ public abstract class RepositoryBase
         return conexao;
     }
 
-    /// <summary>Cria um comando com o texto SQL informado.</summary>
     protected static MySqlCommand CriarComando(MySqlConnection conexao, string sql)
     {
         var comando = conexao.CreateCommand();
@@ -39,20 +31,15 @@ public abstract class RepositoryBase
         return comando;
     }
 
-    /// <summary>
-    /// Adiciona um parâmetro (@nome) ao comando. Valor nulo vira NULL no banco.
-    /// Todo valor vindo de fora entra por aqui, nunca concatenado no SQL (RS06).
-    /// </summary>
+    // Todo valor vindo de fora entra como parâmetro, nunca concatenado no SQL (RS06).
+    // null do C# precisa virar DBNull.Value para gravar NULL no banco.
     protected static void AdicionarParametro(MySqlCommand comando, string nome, object? valor)
     {
         comando.Parameters.AddWithValue(nome, valor ?? DBNull.Value);
     }
 
-    /// <summary>
-    /// Adiciona um parâmetro para cada valor da lista (@prefixo0, @prefixo1, ...)
-    /// e devolve os nomes separados por vírgula, para usar em "IN (...)".
-    /// Só os nomes dos parâmetros entram no SQL; os valores continuam como parâmetros.
-    /// </summary>
+    // Para "IN (...)": cria um parâmetro por valor (@prefixo0, @prefixo1, ...)
+    // e devolve os nomes separados por vírgula. Só os nomes entram no texto do SQL.
     protected static string AdicionarParametrosLista(MySqlCommand comando, string prefixo, IEnumerable<int> valores)
     {
         var nomes = new List<string>();
@@ -66,10 +53,8 @@ public abstract class RepositoryBase
         return string.Join(", ", nomes);
     }
 
-    /// <summary>
-    /// Executa uma gravação (INSERT ou UPDATE) e devolve o número de linhas afetadas.
-    /// É o único lugar que converte o erro 1062 em RegistroDuplicadoException.
-    /// </summary>
+    // Único lugar que converte o erro 1062 (UNIQUE) em RegistroDuplicadoException.
+    // Todo INSERT e UPDATE passa por aqui.
     protected static async Task<int> ExecutarGravacaoAsync(MySqlCommand comando)
     {
         try

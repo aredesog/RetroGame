@@ -5,7 +5,6 @@ using RetroGames.Services.Interfaces;
 
 namespace RetroGames.Services;
 
-/// <summary>Regras de negócio de plataformas. Não conhece SQL nem HTTP.</summary>
 public class PlataformaService : IPlataformaService
 {
     private readonly IRepositorySet repositorio;
@@ -41,7 +40,8 @@ public class PlataformaService : IPlataformaService
         }
         catch (RegistroDuplicadoException)
         {
-            // Outra gravação com o mesmo nome chegou entre a conferência e o INSERT.
+            // Duas requisições ao mesmo tempo: as duas passaram pela conferência acima,
+            // mas o UNIQUE do banco barrou a segunda (erro 1062). Mesmo erro de negócio.
             throw new BusinessRuleException(BusinessErrors.PLATAFORMA_NOME_DUPLICADO);
         }
 
@@ -50,11 +50,11 @@ public class PlataformaService : IPlataformaService
 
     public async Task<Plataforma> AlterarAsync(Plataforma plataforma)
     {
-        await BuscarPorIdAsync(plataforma.Id); // PLATAFORMA_NAO_ENCONTRADA
+        await BuscarPorIdAsync(plataforma.Id); // lança PLATAFORMA_NAO_ENCONTRADA se não existir
 
         plataforma.Nome = plataforma.Nome.Trim();
 
-        // Ignora a própria plataforma: manter o próprio nome não é duplicidade.
+        // Passa o próprio id para ser ignorado: manter o mesmo nome não é duplicidade.
         if (await repositorio.Plataforma.ExisteComNomeAsync(plataforma.Nome, plataforma.Id))
         {
             throw new BusinessRuleException(BusinessErrors.PLATAFORMA_NOME_DUPLICADO); // RN01
@@ -74,7 +74,7 @@ public class PlataformaService : IPlataformaService
 
     public async Task ExcluirAsync(int id)
     {
-        await BuscarPorIdAsync(id); // PLATAFORMA_NAO_ENCONTRADA
+        await BuscarPorIdAsync(id); // lança PLATAFORMA_NAO_ENCONTRADA se não existir
 
         if (await repositorio.Plataforma.PossuiJogosAsync(id))
         {

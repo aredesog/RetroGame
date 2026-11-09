@@ -4,7 +4,6 @@ using RetroGames.Services.Interfaces;
 
 namespace RetroGames.Services;
 
-/// <summary>Service da tabela tb_condicao_jogo. Só leitura.</summary>
 public class CondicaoJogoService : ICondicaoJogoService
 {
     private readonly IRepositorySet repositorio;

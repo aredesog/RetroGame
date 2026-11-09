@@ -1,9 +1,6 @@
 namespace RetroGames.Services.ServiceModels;
 
-/// <summary>
-/// Filtro da listagem de jogos. Campo nulo = filtro não aplicado.
-/// Ver jogos inativos (só administrador) fica para a aula 6.
-/// </summary>
+// Campo nulo = esse filtro não é aplicado.
 public class JogoFiltroServiceModel
 {
     public string? Busca { get; set; }

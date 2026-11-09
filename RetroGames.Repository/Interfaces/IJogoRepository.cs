@@ -2,16 +2,11 @@ using RetroGames.Model.Model;
 
 namespace RetroGames.Repository.Interfaces;
 
-/// <summary>Acesso a dados da tabela tb_jogo.</summary>
 public interface IJogoRepository
 {
-    /// <summary>
-    /// Os jogos de uma página e o total encontrado com o mesmo filtro.
-    /// Cada filtro só vale quando informado (não nulo):
-    /// busca = parte do nome; idPlataforma; ids = lista de jogos permitidos
-    /// (vinda do Service, por exemplo, no filtro por gênero).
-    /// Inativos só aparecem quando incluirInativos = true.
-    /// </summary>
+    // Devolve os jogos da página e o total encontrado com o mesmo filtro.
+    // Filtro nulo = não aplicado. "ids" limita a busca a esses jogos
+    // (o Service usa para o filtro por gênero).
     Task<(List<Jogo> Itens, int Total)> ListarAsync(
         string? busca,
         int? idPlataforma,
@@ -20,15 +15,14 @@ public interface IJogoRepository
         int pagina,
         int tamanhoPagina);
 
-    /// <summary>O jogo com o id informado, ou nulo se não existir.</summary>
     Task<Jogo?> BuscarPorIdAsync(int id);
 
-    /// <summary>Grava um novo jogo e devolve o id gerado pelo banco.</summary>
+    // Devolve o id gerado pelo banco.
     Task<int> InserirAsync(Jogo jogo);
 
-    /// <summary>Atualiza os dados do jogo (exceto situação e data de cadastro).</summary>
+    // Não altera st_ativo nem dt_cadastro.
     Task AlterarAsync(Jogo jogo);
 
-    /// <summary>Marca o jogo como inativo (st_ativo = FALSE). Jogo nunca é apagado.</summary>
+    // Exclusão lógica (RN03): jogo nunca é apagado.
     Task DesativarAsync(int id);
 }

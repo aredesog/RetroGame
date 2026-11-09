@@ -7,10 +7,6 @@ using RetroGames.Services.ServiceModels;
 
 namespace RetroGames.Services;
 
-/// <summary>
-/// Regras de negócio de jogos e montagem do catálogo com LINQ.
-/// Não conhece SQL nem HTTP: usa só o IRepositorySet e o catálogo de erros.
-/// </summary>
 public class JogoService : IJogoService
 {
     private readonly IRepositorySet repositorio;
@@ -22,8 +18,8 @@ public class JogoService : IJogoService
 
     public async Task<PaginaServiceModel<JogoDetalheServiceModel>> ListarAsync(JogoFiltroServiceModel filtro)
     {
-        // Filtro por gênero: o Service seleciona com LINQ os ids dos jogos do gênero
-        // e entrega a lista ao Repository, que continua paginando no SQL.
+        // O gênero está em outra tabela (tb_jogo_genero). O Service pega com LINQ os ids
+        // dos jogos desse gênero e passa ao Repository, que filtra e pagina no SQL.
         List<int>? idsDoGenero = null;
         if (filtro.IdGenero is not null)
         {
@@ -39,7 +35,7 @@ public class JogoService : IJogoService
             filtro.Busca,
             filtro.IdPlataforma,
             idsDoGenero,
-            incluirInativos: false, // administrador vendo inativos: aula 6
+            incluirInativos: false, // ver inativos é só do administrador (aula 6)
             filtro.Pagina,
             filtro.TamanhoPagina);
 
@@ -64,8 +60,8 @@ public class JogoService : IJogoService
     {
         jogo.Nome = jogo.Nome.Trim();
         jogo.Ativo = true;
-        jogo.DataCadastro = DateTime.UtcNow;
-        var generos = idsGeneros.Distinct().ToList();
+        jogo.DataCadastro = DateTime.UtcNow; // datas sempre em UTC
+        var generos = idsGeneros.Distinct().ToList(); // ignora gênero repetido na lista
 
         await ConferirReferenciasAsync(jogo, generos); // RN05
 
@@ -75,6 +71,8 @@ public class JogoService : IJogoService
             Timeout = TransactionManager.DefaultTimeout,
         };
 
+        // Jogo e gêneros entram juntos: se qualquer gravação falhar, nada fica no banco.
+        // Complete() só no fim; sem ele, ao sair do using, tudo é desfeito.
         using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
             transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
         {
@@ -83,16 +81,16 @@ public class JogoService : IJogoService
             transactionScope.Complete();
         }
 
-        return await BuscarPorIdAsync(jogo.Id);
+        return await BuscarPorIdAsync(jogo.Id); // devolve já com plataforma, condição e gêneros
     }
 
     public async Task<JogoDetalheServiceModel> AlterarAsync(Jogo jogo, IReadOnlyCollection<int> idsGeneros)
     {
-        _ = await repositorio.Jogo.BuscarPorIdAsync(jogo.Id)
+        _ = await repositorio.Jogo.BuscarPorIdAsync(jogo.Id) // só confere se existe
             ?? throw new BusinessRuleException(BusinessErrors.JOGO_NAO_ENCONTRADO);
 
         jogo.Nome = jogo.Nome.Trim();
-        var generos = idsGeneros.Distinct().ToList();
+        var generos = idsGeneros.Distinct().ToList(); // ignora gênero repetido na lista
 
         await ConferirReferenciasAsync(jogo, generos); // RN05
 
@@ -105,26 +103,25 @@ public class JogoService : IJogoService
         using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
             transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
         {
+            // Troca os gêneros apagando os vínculos antigos e gravando os novos.
             await repositorio.Jogo.AlterarAsync(jogo);
             await repositorio.JogoGenero.RemoverPorJogoAsync(jogo.Id);
             await repositorio.JogoGenero.InserirAsync(jogo.Id, generos);
             transactionScope.Complete();
         }
 
-        return await BuscarPorIdAsync(jogo.Id);
+        return await BuscarPorIdAsync(jogo.Id); // devolve já com plataforma, condição e gêneros
     }
 
     public async Task DesativarAsync(int id)
     {
-        _ = await repositorio.Jogo.BuscarPorIdAsync(id)
+        _ = await repositorio.Jogo.BuscarPorIdAsync(id) // só confere se existe
             ?? throw new BusinessRuleException(BusinessErrors.JOGO_NAO_ENCONTRADO);
 
         await repositorio.Jogo.DesativarAsync(id); // RN03: nunca apaga
     }
 
-    /// <summary>
-    /// RN05: plataforma, condição e todos os gêneros precisam existir.
-    /// </summary>
+    // RN05: plataforma, condição e todos os gêneros informados precisam existir.
     private async Task ConferirReferenciasAsync(Jogo jogo, List<int> idsGeneros)
     {
         if (await repositorio.Plataforma.BuscarPorIdAsync(jogo.IdPlataforma) is null)
@@ -145,11 +142,9 @@ public class JogoService : IJogoService
         }
     }
 
-    /// <summary>
-    /// Monta o detalhe de uma lista de jogos com LINQ.
-    /// Faz sempre 4 consultas (plataformas, condições, gêneros e vínculos),
-    /// qualquer que seja o tamanho da lista: nunca uma consulta por jogo.
-    /// </summary>
+    // Junta jogo + plataforma + condição + gêneros, que estão em tabelas diferentes.
+    // São sempre 4 consultas (uma por tabela), qualquer que seja o número de jogos;
+    // a combinação é feita em memória com LINQ. Nunca uma consulta por jogo.
     private async Task<List<JogoDetalheServiceModel>> MontarDetalhesAsync(List<Jogo> jogos)
     {
         if (jogos.Count == 0)
@@ -166,6 +161,7 @@ public class JogoService : IJogoService
             from jogo in jogos
             join plataforma in plataformas on jogo.IdPlataforma equals plataforma.Id
             join condicao in condicoes on jogo.IdCondicaoJogo equals condicao.Id
+            // "into" agrupa os vínculos de cada jogo (um jogo tem vários gêneros)
             join vinculo in vinculos on jogo.Id equals vinculo.IdJogo into vinculosDoJogo
             select new JogoDetalheServiceModel
             {
