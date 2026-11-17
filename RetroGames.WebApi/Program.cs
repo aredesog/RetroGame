@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using RetroGames.Services.Interfaces;
 using RetroGames.WebApi.ActionFilters;
 using RetroGames.WebApi.ApiModels;
 using RetroGames.WebApi.Configuration;
@@ -20,8 +21,21 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "(copie de .env.example) com a linha ConnectionStrings__Default=\"...\".");
 }
 
+// Administrador inicial (RS05): também vem do .env.
+var emailAdmin = builder.Configuration["AdminInicial:Email"];
+var senhaAdmin = builder.Configuration["AdminInicial:Senha"];
+if (string.IsNullOrWhiteSpace(emailAdmin) || string.IsNullOrWhiteSpace(senhaAdmin))
+{
+    throw new InvalidOperationException(
+        "Administrador inicial não configurado. Acrescente ao .env as linhas " +
+        "AdminInicial__Email=\"...\" e AdminInicial__Senha=\"...\" (veja .env.example).");
+}
+
 builder.Services.AddRepositorios(connectionString);
 builder.Services.AddServicosDeNegocio();
+
+builder.Services.AddAutenticacaoPorCookie();
+builder.Services.AddAutorizacao();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -45,18 +59,30 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Cria o administrador se ainda não houver nenhum. Os Services são "scoped" (um por requisição),
+// então fora de uma requisição é preciso abrir um escopo à mão.
+using (var escopo = app.Services.CreateScope())
+{
+    var autenticacao = escopo.ServiceProvider.GetRequiredService<IAutenticacaoService>();
+    await autenticacao.GarantirAdministradorInicialAsync(emailAdmin, senhaAdmin);
+}
+
 // Primeira etapa do pipeline: assim pega exceção de qualquer etapa depois dela.
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();   // descrição da API em /openapi/v1.json
+    app.MapOpenApi().AllowAnonymous();   // descrição da API em /openapi/v1.json; sem login, o Swagger não carrega
     app.UseSwaggerUI(opcoes =>
     {
         opcoes.SwaggerEndpoint("/openapi/v1.json", "RetroGames API");
         opcoes.RoutePrefix = "swagger";
     });
 }
+
+// Nessa ordem: primeiro descobre quem é (cookie), depois decide o que pode.
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

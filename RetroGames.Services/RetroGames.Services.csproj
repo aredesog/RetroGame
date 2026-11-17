@@ -1,9 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\RetroGames.Model\RetroGames.Model.csproj" />
     <ProjectReference Include="..\RetroGames.Repository\RetroGames.Repository.csproj" />
     <ProjectReference Include="..\RetroGames.WebApi.ApiModels\RetroGames.WebApi.ApiModels.csproj" />
+  </ItemGroup>
+
+  <!-- Dá acesso ao PasswordHasher (ASP.NET Core Identity), que já vem com o .NET: nenhum pacote novo. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <PropertyGroup>
