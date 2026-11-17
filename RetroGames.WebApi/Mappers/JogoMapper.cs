@@ -1,3 +1,4 @@
+using RetroGames.Model.Model;
 using RetroGames.Services.ServiceModels;
 using RetroGames.WebApi.ApiModels;
 
@@ -55,4 +56,32 @@ public static class JogoMapper
         DescricaoCondicao = detalhe.DescricaoCondicao,
         Generos = detalhe.Generos.Select(g => g.ParaResponse()).ToList(),
     };
+
+    public static Jogo ParaModel(this InserirJogoRequestApiModel request) => new()
+    {
+        Nome = request.Nome,
+        Descricao = DescricaoOuNulo(request.Descricao),
+        AnoLancamento = request.AnoLancamento,
+        Preco = request.Preco,
+        Estoque = request.Estoque,
+        IdPlataforma = request.IdPlataforma,
+        IdCondicaoJogo = request.IdCondicaoJogo,
+    };
+
+    public static Jogo ParaModel(this AlterarJogoRequestApiModel request, int id) => new()
+    {
+        Id = id,
+        Nome = request.Nome,
+        Descricao = DescricaoOuNulo(request.Descricao),
+        AnoLancamento = request.AnoLancamento,
+        Preco = request.Preco,
+        Estoque = request.Estoque,
+        Ativo = request.Ativo,
+        IdPlataforma = request.IdPlataforma,
+        IdCondicaoJogo = request.IdCondicaoJogo,
+    };
+
+    // ds_jogo é a única coluna opcional: texto vazio ou só com espaços vira NULL no banco.
+    private static string? DescricaoOuNulo(string? descricao) =>
+        string.IsNullOrWhiteSpace(descricao) ? null : descricao.Trim();
 }

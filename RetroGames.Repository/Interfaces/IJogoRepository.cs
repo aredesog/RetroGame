@@ -20,7 +20,7 @@ public interface IJogoRepository
     // Devolve o id gerado pelo banco.
     Task<int> InserirAsync(Jogo jogo);
 
-    // Não altera st_ativo nem dt_cadastro.
+    // Não altera dt_cadastro. Grava st_ativo, o que permite reativar um jogo.
     Task AlterarAsync(Jogo jogo);
 
     // Exclusão lógica (RN03): jogo nunca é apagado.

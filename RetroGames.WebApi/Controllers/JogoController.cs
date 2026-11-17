@@ -32,4 +32,30 @@ public class JogoController : ControllerBase
         var detalhe = await jogoService.BuscarPorIdAsync(id);
         return Ok(RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>.Sucesso(detalhe.ParaListarPorIdResponse()));
     }
+
+    // Os gêneros vão ao Service separados do jogo: ele grava os dois numa transação.
+    [HttpPost]
+    public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Inserir(
+        [FromBody] InserirJogoRequestApiModel request)
+    {
+        var criado = await jogoService.InserirAsync(request.ParaModel(), request.IdsGeneros);
+        return CreatedAtAction(nameof(ListarPorId), new { id = criado.Jogo.Id },
+            RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>.Sucesso(criado.ParaListarPorIdResponse()));
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Alterar(
+        int id, [FromBody] AlterarJogoRequestApiModel request)
+    {
+        var alterado = await jogoService.AlterarAsync(request.ParaModel(id), request.IdsGeneros);
+        return Ok(RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>.Sucesso(alterado.ParaListarPorIdResponse()));
+    }
+
+    // Não apaga: só desativa (RN03). O jogo continua no banco com st_ativo = 0.
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
+    {
+        await jogoService.DesativarAsync(id);
+        return Ok(RetroGamesResponseApiModel.Sucesso());
+    }
 }
