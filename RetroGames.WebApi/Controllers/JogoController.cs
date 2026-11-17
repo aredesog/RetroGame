@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RetroGames.Services.Interfaces;
 using RetroGames.WebApi.ApiModels;
+using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Mappers;
 
 namespace RetroGames.WebApi.Controllers;
@@ -18,6 +20,7 @@ public class JogoController : ControllerBase
 
     // [FromQuery]: os filtros vêm da query string (?busca=...&pagina=...), não do corpo.
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<RetroGamesResponseApiModel<PaginaResponseApiModel<ListarJogoResponseApiModel>>>> Listar(
         [FromQuery] ListarJogoRequestApiModel request)
     {
@@ -27,6 +30,7 @@ public class JogoController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> ListarPorId(int id)
     {
         var detalhe = await jogoService.BuscarPorIdAsync(id);
@@ -35,6 +39,7 @@ public class JogoController : ControllerBase
 
     // Os gêneros vão ao Service separados do jogo: ele grava os dois numa transação.
     [HttpPost]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Inserir(
         [FromBody] InserirJogoRequestApiModel request)
     {
@@ -44,6 +49,7 @@ public class JogoController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Alterar(
         int id, [FromBody] AlterarJogoRequestApiModel request)
     {
@@ -53,6 +59,7 @@ public class JogoController : ControllerBase
 
     // Não apaga: só desativa (RN03). O jogo continua no banco com st_ativo = 0.
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
     {
         await jogoService.DesativarAsync(id);

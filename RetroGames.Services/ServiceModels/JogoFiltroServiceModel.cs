@@ -8,4 +8,5 @@ public class JogoFiltroServiceModel
     public int? IdGenero { get; set; }
     public int Pagina { get; set; } = 1;
     public int TamanhoPagina { get; set; } = 10;
+    public bool IncluirInativos { get; set; }   // só vale para o administrador (RN04)
 }

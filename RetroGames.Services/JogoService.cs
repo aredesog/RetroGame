@@ -10,10 +10,12 @@ namespace RetroGames.Services;
 public class JogoService : IJogoService
 {
     private readonly IRepositorySet repositorio;
+    private readonly IUsuarioAtualService usuarioAtual;
 
-    public JogoService(IRepositorySet repositorio)
+    public JogoService(IRepositorySet repositorio, IUsuarioAtualService usuarioAtual)
     {
         this.repositorio = repositorio;
+        this.usuarioAtual = usuarioAtual;
     }
 
     public async Task<PaginaServiceModel<JogoDetalheServiceModel>> ListarAsync(JogoFiltroServiceModel filtro)
@@ -35,7 +37,8 @@ public class JogoService : IJogoService
             filtro.Busca,
             filtro.IdPlataforma,
             idsDoGenero,
-            incluirInativos: false, // ver inativos é só do administrador (aula 6)
+            // RN04: o pedido de inativos só é atendido para o administrador; os demais veem só ativos.
+            incluirInativos: filtro.IncluirInativos && usuarioAtual.EhAdministrador,
             filtro.Pagina,
             filtro.TamanhoPagina);
 
@@ -52,6 +55,12 @@ public class JogoService : IJogoService
     {
         var jogo = await repositorio.Jogo.BuscarPorIdAsync(id)
             ?? throw new BusinessRuleException(BusinessErrors.JOGO_NAO_ENCONTRADO);
+
+        // RN04: para quem não é administrador, jogo inativo é como se não existisse.
+        if (!jogo.Ativo && !usuarioAtual.EhAdministrador)
+        {
+            throw new BusinessRuleException(BusinessErrors.JOGO_NAO_ENCONTRADO);
+        }
 
         return (await MontarDetalhesAsync(new List<Jogo> { jogo })).Single();
     }

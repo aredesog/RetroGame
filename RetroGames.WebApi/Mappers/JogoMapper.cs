@@ -13,6 +13,7 @@ public static class JogoMapper
         IdGenero = request.IdGenero,
         Pagina = request.Pagina,
         TamanhoPagina = request.TamanhoPagina,
+        IncluirInativos = request.IncluirInativos,
     };
 
     public static PaginaResponseApiModel<ListarJogoResponseApiModel> ParaResponse(
