@@ -5,6 +5,9 @@ public class RetroGamesResponseApiModel
 {
     public int ResponseCode { get; set; }
     public string? ErrorMessage { get; set; }
+
+    // Sucesso sem dados, usado na exclusão (a API responde 200, nunca 204).
+    public static RetroGamesResponseApiModel Sucesso() => new() { ResponseCode = ResponseCodes.SUCESSO };
 }
 
 public class RetroGamesResponseApiModel<T> : RetroGamesResponseApiModel
