@@ -6,7 +6,7 @@ public class BusinessRuleException : Exception
     public ErroNegocio Erro { get; }
 
     public BusinessRuleException(ErroNegocio erro)
-        : base(erro.Mensagem)
+        : base(erro.DefaultMessage)
     {
         Erro = erro;
     }

@@ -28,7 +28,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             status = (int)erroDeNegocio.Erro.Status;
             resposta = new RetroGamesResponseApiModel
             {
-                ResponseCode = erroDeNegocio.Erro.Codigo,
+                ResponseCode = erroDeNegocio.Erro.Code,
                 ErrorMessage = erroDeNegocio.Message,
             };
         }

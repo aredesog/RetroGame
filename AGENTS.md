@@ -13,12 +13,19 @@ Este arquivo orienta qualquer assistente de IA usado neste repositório. O Retro
 ## 2. Referências, em ordem de prioridade
 
 1. Especificação técnica **RetroGames — Arquitetura e Stack** (documento fornecido pelo professor).
-2. Guia da aula atual (seção "Requisitos" da etapa em andamento).
+2. Roteiro da aula atual (passos e itens "Confira" da etapa em andamento).
 3. `docs/MER.md` e `docs/USER_STORIES.md` deste repositório.
-4. Convenções do código existente.
-5. Boas práticas das tecnologias da stack.
+4. Documento **Fundamentos teóricos**, para explicar conceitos.
+5. Convenções do código existente.
+6. Boas práticas das tecnologias da stack.
 
 Se duas referências se contradizem, aponte o conflito e pergunte ao estudante qual seguir. Não escolha uma interpretação sem avisar.
+
+### Construção aula a aula
+
+O projeto é construído em etapas, e este arquivo descreve o sistema completo. Muitas classes citadas aqui ainda não existem na aula atual. Antes de propor algo, confira o que já existe no repositório e faça só o que o roteiro da aula pede. Não peça, não crie e não altere arquivos de aulas futuras. Ordem das aulas: aula 1, ambiente, banco e modelos; aula 2, Repository; aula 3, Services (`BusinessErrors`, `BusinessRuleException` e a transação na gravação de jogo com gêneros); aula 4, API de leitura (`Program.cs`, envelope, `ResponseCodes` 0 a 3, `GlobalExceptionHandler`, Swagger e rotas GET); aula 5, API de gravação (ApiModels de entrada, validators, POST/PUT/DELETE); aula 6, autenticação e proteção da administração; aula 7, front-end público (projeto React com Vite, acesso à API, rotas, catálogo e detalhe do jogo); aula 8, front-end com login, sessão e telas de administração. O módulo de Compras vem depois, nas aulas 9 e 10. Os testes unitários são uma tarefa adicional, feita fora das aulas; só crie testes quando o estudante estiver nessa tarefa.
+
+A especificação descreve o sistema pronto. Quando o roteiro da aula deixa algo da especificação para uma aula posterior (por exemplo, esconder jogos inativos de quem não é administrador, que entra na aula 6), isso não é conflito: siga o roteiro e não implemente a parte adiada. Só pergunte ao estudante quando o roteiro e a especificação disserem coisas diferentes sobre o que deve ser feito agora.
 
 ## 3. Regras do projeto
 
@@ -35,15 +42,24 @@ Se duas referências se contradizem, aponte o conflito e pergunte ao estudante q
 | Service | Regras de negócio, transações, composição de dados com LINQ, `BusinessRuleException` | Conhecer HTTP ou SQL |
 | Repository | SQL parametrizado e mapeamento coluna → propriedade | Decidir regras, abrir transações |
 
+### Nomes
+
+- Uma classe por tabela em cada camada, com o nome da tabela sem o prefixo `tb_`: `tb_condicao_jogo` → `CondicaoJogo` (modelo), `ICondicaoJogoRepository`/`CondicaoJogoRepository`, `ICondicaoJogoService`/`CondicaoJogoService`, `CondicaoJogoController` (rota `/api/CondicaoJogo`).
+- Não crie classes genéricas que agrupem várias tabelas (por exemplo, um "TabelaTipoRepository").
+- ApiModels seguem, sempre que possível, o padrão `{Ação}{Entidade}{Request|Response}ApiModel`, por exemplo `InserirPlataformaRequestApiModel`.
+- Propriedades (Model, ServiceModels e ApiModels) não repetem o nome da classe: `Plataforma.Id` e `Plataforma.Nome`, nunca `PlataformaId` ou `PlataformaNome`. A chave primária é sempre `Id`; a chave estrangeira é `Id` + nome da classe referenciada (`Jogo.IdPlataforma`). O nome de outra entidade só aparece quando o dado vem dela (`NomePlataforma` em um ApiModel de jogo).
+- Propriedade de texto obrigatória começa com `string.Empty`.
+
 ### Banco de dados
 
 - O banco guarda só a estrutura: PK, FK com comportamento padrão, tipos, `NOT NULL` e `UNIQUE`.
 - Não use trigger, function, `CHECK`, `ON DELETE CASCADE` ou `ON DELETE SET NULL`.
 - Nomes seguem a convenção `tb_`, `co_seq_`, `co_`, `no_`, `ds_`, `nu_`, `vl_`, `qt_`, `dt_`, `st_`.
-- Mudanças de estrutura entram em um novo script numerado em `database/`.
+- Mudanças de estrutura entram em um novo script SQL guardado no repositório. Um script já executado não é alterado.
 
 ### Repository
 
+- Um Repository por tabela (veja "Nomes").
 - Todo valor entra como parâmetro (`@nome`). Nunca concatene valores no SQL.
 - Cada consulta lê uma única tabela: sem `JOIN` e sem subconsulta em outra tabela.
 - Filtros, ordenação e paginação (`LIMIT`/`OFFSET`) ficam no SQL.
@@ -53,8 +69,9 @@ Se duas referências se contradizem, aponte o conflito e pergunte ao estudante q
 
 - Toda regra de negócio fica aqui, inclusive as que o banco também garante.
 - Dados de várias tabelas são combinados com LINQ e devolvidos em um ServiceModel (exemplo: `JogoDetalheServiceModel`). Filtro que depende de outra tabela também é resolvido aqui, com LINQ (exemplo: filtro por gênero no `JogoService`).
-- Erros de negócio: `throw new BusinessRuleException(BusinessErrors.X)`.
-- `RegistroDuplicadoException` vinda do Repository vira o erro de negócio correspondente (exemplo: `PlataformaNomeDuplicado`).
+- Erros de negócio ficam no catálogo `BusinessErrors` (projeto Services), no formato `(Code, DefaultMessage, Status)`, a partir do código 100. O `Status` é o status HTTP do erro: `HttpStatusCode.BadRequest` (400) para regra violada, `NotFound` (404) para registro não encontrado e `Conflict` (409) para conflito com dados já gravados (nome duplicado, registro com dependentes). O Service lança sempre `throw new BusinessRuleException(BusinessErrors.X)`; não há outras exceções de negócio.
+- Erro de "não encontrado" segue o nome `{ENTIDADE}_NAO_ENCONTRADO(A)`, um por entidade (exemplo: `PLATAFORMA_NAO_ENCONTRADA`).
+- `RegistroDuplicadoException` vinda do Repository vira o erro de negócio correspondente (exemplo: `PLATAFORMA_NOME_DUPLICADO`).
 - Transação só quando a operação grava mais de um comando, sempre neste formato:
 
 ```csharp
@@ -63,9 +80,8 @@ var transactionOptions = new TransactionOptions
     IsolationLevel = IsolationLevel.ReadCommitted,
     Timeout = TransactionManager.DefaultTimeout,
 };
-
 using (var transactionScope = new TransactionScope(TransactionScopeOption.Required,
-    transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
+           transactionOptions, TransactionScopeAsyncFlowOption.Enabled))
 {
     // chamadas aos repositórios
     transactionScope.Complete();
@@ -81,14 +97,25 @@ using (var transactionScope = new TransactionScope(TransactionScopeOption.Requir
 ### API
 
 - Toda resposta usa o envelope `{ "responseCode", "data", "errorMessage" }`.
-- Códigos em `ResponseCodes.cs`, sequenciais: `SUCESSO = 0`, `ERRO = 1` e, a partir de 2, tuplas `(Code, DefaultMessage)`. Código novo recebe o próximo número livre.
-- Status HTTP: 200, 201, 204, 400, 401, 403, 404, 409, 500, conforme a especificação.
+- Códigos da própria API em `ResponseCodes.cs` (0 a 99), sequenciais: `SUCESSO = 0`, `ERRO = 1` e, a partir de 2, tuplas `(Code, DefaultMessage)`. Erros de negócio não se repetem aqui: o envelope devolve o código do `BusinessErrors` que o Service lançou. Código novo recebe o próximo número livre do seu catálogo.
+- Status HTTP: 200, 201, 400, 401, 403, 404, 409 e 500. Para `BusinessRuleException`, o `GlobalExceptionHandler` usa o `Status` do erro do catálogo; o `responseCode` diz qual regra. 401 e 403 vêm da autenticação. Exclusões respondem 200 com o envelope; a API não usa 204.
 
 ### Segurança
 
-- Connection string e senha do administrador inicial ficam em `dotnet user-secrets`. Nunca escreva credenciais em arquivo versionado, nem em exemplos.
+- No curso, por simplicidade, a aplicação acessa o MySQL com o usuário local do estudante (por exemplo, `root`). Em sistemas reais, ela usaria um usuário próprio, só com as permissões necessárias.
+- Connection string e senha do administrador inicial ficam no arquivo `.env`, na raiz do repositório, que está no `.gitignore` (como no Node): `ConnectionStrings__Default`, `AdminInicial__Email` e `AdminInicial__Senha`. O modelo versionado é o `.env.example`, só com `SUA_SENHA` no lugar das senhas. A API carrega o `.env` com o pacote DotNetEnv. Os `appsettings*.json` são versionados e nunca têm senha. Não use `dotnet user-secrets`. Nunca escreva credenciais em arquivo versionado, nem em exemplos.
 - Senhas são guardadas apenas como hash (`PasswordHasher`).
-- Sessão por cookie com proteção CSRF; não guarde token no `localStorage`.
+- A API é segura por padrão: a `FallbackPolicy` (em `AutorizacaoConfig`) exige usuário autenticado em toda rota. Rota pública recebe `[AllowAnonymous]` de forma explícita, e só quando a especificação a define como Público; gravações e gestão usam `[Authorize(Policy = Politicas.Administrador)]`. Nunca remova a política padrão para "fazer funcionar".
+- Acesso de cada rota (siga exatamente; rota nova que não esteja aqui exige login, e a decisão de abri-la é do professor):
+
+  | Acesso | Rotas | Como marcar |
+  | --- | --- | --- |
+  | Público | `POST /api/Autenticacao/login` e `/cadastrar`; `GET /api/Jogo` e `/api/Jogo/{id}`; `GET /api/Plataforma`, `/api/Genero` (lista e por id) e `/api/CondicaoJogo`; Swagger em desenvolvimento | `[AllowAnonymous]` na action; `app.MapOpenApi().AllowAnonymous()` no `Program.cs` |
+  | Usuário logado | `POST /api/Autenticacao/logout`, `GET /api/Autenticacao/eu`, `POST /api/Pedido`, `GET /api/Pedido/meus` e `/api/Pedido/{id}` (dono ou administrador) | Nada: vale a política padrão |
+  | Administrador | POST, PUT e DELETE de `/api/Plataforma`, `/api/Jogo` e `/api/Genero`; `GET /api/Pedido`, `PUT /api/Pedido/{id}/situacao` e `GET /api/SituacaoPedido` | `[Authorize(Policy = Politicas.Administrador)]` |
+
+  Até a aula 8 só existem login, logout, eu, catálogo, plataformas, gêneros (leitura) e condições; cadastro, pedidos, situações e gravação de gêneros são do Módulo de Compras. Inativos em `GET /api/Jogo` só aparecem para o administrador (RN04), sem mudar o acesso da rota.
+- Sessão por cookie `HttpOnly` e `SameSite=Strict`; não guarde token no `localStorage`. O `SameSite=Strict` é a defesa contra CSRF deste projeto: por simplicidade, não há token antiforgery (`AddAntiforgery`, cabeçalho `X-CSRF-TOKEN`). Não o implemente sem pedido do professor.
 - `bin/`, `obj/`, `node_modules/` e `dist/` não são versionados.
 
 ## 4. Como trabalhar com o estudante

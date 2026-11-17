@@ -18,8 +18,8 @@ public static class BusinessErrors
         new(103, "Jogo não encontrado.", HttpStatusCode.NotFound);
 
     public static readonly ErroNegocio CONDICAO_NAO_ENCONTRADA =
-        new(104, "A condição informada não existe.", HttpStatusCode.NotFound);
+        new(104, "Condição de jogo não encontrada.", HttpStatusCode.NotFound);
 
     public static readonly ErroNegocio GENERO_NAO_ENCONTRADO =
-        new(105, "Um ou mais gêneros informados não existem.", HttpStatusCode.NotFound);
+        new(105, "Gênero não encontrado.", HttpStatusCode.NotFound);
 }
