@@ -5,6 +5,7 @@ import DetalheJogo from './pages/Catalogo/DetalheJogo.jsx'
 import NaoEncontrada from './pages/NaoEncontrada.jsx'
 import Login from './pages/Login/Login.jsx'
 import RotaProtegida from './components/RotaProtegida.jsx'
+import Plataforma from './pages/Auxiliares/Plataforma.jsx'
 
 export default function App() {
   return (
@@ -18,7 +19,7 @@ export default function App() {
           <Route path="jogos" element={<h1>Jogos</h1>} />
           <Route path="jogos/novo" element={<h1>Novo jogo</h1>} />
           <Route path="jogos/:id/editar" element={<h1>Editar jogo</h1>} />
-          <Route path="plataformas" element={<h1>Plataformas</h1>} />
+          <Route path="plataformas" element={<Plataforma />} />
         </Route>
         <Route path="*" element={<NaoEncontrada />} />
       </Route>
