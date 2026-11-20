@@ -70,6 +70,18 @@ public class JogoGeneroRepository : RepositoryBase, IJogoGeneroRepository
         await comando.ExecuteNonQueryAsync();
     }
 
+    public async Task<bool> ExisteJogoComGeneroAsync(int idGenero)
+    {
+        // Não olha st_ativo (que está em tb_jogo): jogo desativado continua vinculado e também bloqueia.
+        const string sql = "SELECT 1 FROM tb_jogo_genero WHERE co_genero = @idGenero LIMIT 1";
+
+        await using var conexao = await AbrirConexaoAsync();
+        await using var comando = CriarComando(conexao, sql);
+        AdicionarParametro(comando, "@idGenero", idGenero);
+
+        return await comando.ExecuteScalarAsync() is not null;
+    }
+
     private static async Task<List<JogoGenero>> LerVinculosAsync(MySqlCommand comando)
     {
         await using var leitor = await comando.ExecuteReaderAsync();
