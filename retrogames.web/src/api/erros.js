@@ -8,3 +8,13 @@ export function obterMensagemErro(erro) {
   // Com resposta: a API já manda a mensagem pronta no envelope.
   return erro.response.data?.errorMessage ?? 'Ocorreu um erro inesperado. Tente novamente mais tarde.'
 }
+export function obterErrosDosCampos(erro) {
+  const resposta = erro?.response
+  const envelope = resposta?.data
+  if (resposta?.status !== 400 || envelope?.responseCode !== 3 || !envelope.data) return {}
+
+  // A API agrupa as mensagens de cada campo em uma lista.
+  return Object.fromEntries(
+    Object.entries(envelope.data).map(([campo, mensagens]) => [campo, mensagens.join(' ')]),
+  )
+}

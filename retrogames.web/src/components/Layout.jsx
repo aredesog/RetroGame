@@ -59,8 +59,8 @@ export default function Layout() {
                     Administração
                   </button>
                   <ul className="dropdown-menu">
-                    <li><button className="dropdown-item" type="button" disabled>Jogos</button></li>
-                    <li><button className="dropdown-item" type="button" disabled>Plataformas</button></li>
+                    <li><NavLink className="dropdown-item" to="/admin/jogos">Jogos</NavLink></li>
+                    <li><NavLink className="dropdown-item" to="/admin/plataformas">Plataformas</NavLink></li>
                   </ul>
                 </li>
               )}

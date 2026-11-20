@@ -7,10 +7,16 @@ export const jogoApi = {
   // filtros: { busca, idPlataforma, idGenero, pagina, tamanhoPagina }. Os vazios não vão na URL.
   listar: async (filtros) => (await api.get('/Jogo', { params: filtros })).data.data,
   buscarPorId: async (id) => (await api.get(`/Jogo/${id}`)).data.data,
+  inserir: async (dados) => (await api.post('/Jogo', dados)).data.data,
+  alterar: async (id, dados) => (await api.put(`/Jogo/${id}`, dados)).data.data,
+  desativar: async (id) => (await api.delete(`/Jogo/${id}`)).data.data,
 }
 
 export const plataformaApi = {
   listar: async () => (await api.get('/Plataforma')).data.data,
+  inserir: async (dados) => (await api.post('/Plataforma', dados)).data.data,
+  alterar: async (id, dados) => (await api.put(`/Plataforma/${id}`, dados)).data.data,
+  excluir: async (id) => (await api.delete(`/Plataforma/${id}`)).data.data,
 }
 
 export const generoApi = {
