@@ -20,3 +20,9 @@ export const generoApi = {
 export const condicaoJogoApi = {
   listar: async () => (await api.get('/CondicaoJogo')).data.data,
 }
+
+export const autenticacaoApi = {
+  entrar: async (dados) => (await api.post('/Autenticacao/login', dados)).data.data,
+  sair: async () => (await api.post('/Autenticacao/logout')).data.data,
+  usuarioAtual: async () => (await api.get('/Autenticacao/eu')).data.data,
+}

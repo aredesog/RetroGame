@@ -6,4 +6,18 @@ const api = axios.create({
   withCredentials: true,  // envia o cookie de sessão (retrogames.sessao) junto
 })
 
+api.interceptors.response.use(
+  (resposta) => resposta,
+  (erro) => {
+    const caminho = erro.config?.url?.split('?')[0]
+    const respostaEsperada = caminho === '/Autenticacao/eu' || caminho === '/Autenticacao/login'
+
+    if (erro.response?.status === 401 && !respostaEsperada) {
+      window.dispatchEvent(new Event('sessao:expirada'))
+    }
+
+    return Promise.reject(erro)
+  },
+)
+
 export default api
