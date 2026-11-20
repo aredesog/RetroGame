@@ -224,4 +224,92 @@ public class PedidoServiceTests
         jogos.Verify(repo => repo.AlterarEstoqueAsync(2, 3), Times.Once);
         jogos.Verify(repo => repo.AlterarEstoqueAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Exactly(2));
     }
+
+    [Fact]
+    public async Task ListarMeus_ComPedidos_ConsultaSoOUsuarioLogado()
+    {
+        // Arrange
+        var pedido = new Pedido
+        {
+            Id = IdPedido,
+            IdUsuario = IdUsuarioLogado,
+            IdSituacaoPedido = SituacaoPedidoIds.Pendente,
+        };
+        pedidos.Setup(repo => repo.ListarPorUsuarioAsync(IdUsuarioLogado)).ReturnsAsync([pedido]);
+        PrepararMontagem(IdUsuarioLogado);
+        var service = CriarService();
+
+        // Act
+        var resultado = await service.ListarMeusAsync();
+
+        // Assert
+        var detalhe = Assert.Single(resultado);
+        Assert.Equal(IdPedido, detalhe.Id);
+        Assert.Equal(IdUsuarioLogado, detalhe.IdUsuario);
+        pedidos.Verify(repo => repo.ListarPorUsuarioAsync(IdUsuarioLogado), Times.Once);
+        pedidos.Verify(repo => repo.ListarPorUsuarioAsync(It.Is<int>(id => id != IdUsuarioLogado)), Times.Never);
+        pedidos.Verify(repo => repo.ListarAsync(It.IsAny<int?>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task BuscarPorId_Inexistente_LancaPedidoNaoEncontrado()
+    {
+        // Arrange
+        pedidos.Setup(repo => repo.BuscarPorIdAsync(IdPedido)).ReturnsAsync((Pedido?)null);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.BuscarPorIdAsync(IdPedido));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PEDIDO_NAO_ENCONTRADO, excecao.Erro);
+        Assert.Equal(109, excecao.Erro.Code);
+        pedidos.Verify(repo => repo.BuscarPorIdAsync(IdPedido), Times.Once);
+    }
+
+    [Fact]
+    public async Task BuscarPorId_PedidoDeOutroCliente_LancaPedidoDeOutroUsuario()
+    {
+        // Arrange
+        pedidos.Setup(repo => repo.BuscarPorIdAsync(IdPedido)).ReturnsAsync(new Pedido
+        {
+            Id = IdPedido,
+            IdUsuario = 8,
+            IdSituacaoPedido = SituacaoPedidoIds.Pendente,
+        });
+        usuarioAtual.SetupGet(usuario => usuario.EhAdministrador).Returns(false);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.BuscarPorIdAsync(IdPedido));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PEDIDO_DE_OUTRO_USUARIO, excecao.Erro);
+        Assert.Equal(113, excecao.Erro.Code);
+        itens.Verify(repo => repo.ListarPorPedidosAsync(It.IsAny<IReadOnlyCollection<int>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task BuscarPorId_AdministradorPedidoDeOutro_DevolvePedido()
+    {
+        // Arrange
+        const int idDono = 8;
+        pedidos.Setup(repo => repo.BuscarPorIdAsync(IdPedido)).ReturnsAsync(new Pedido
+        {
+            Id = IdPedido,
+            IdUsuario = idDono,
+            IdSituacaoPedido = SituacaoPedidoIds.Pendente,
+        });
+        usuarioAtual.SetupGet(usuario => usuario.EhAdministrador).Returns(true);
+        PrepararMontagem(idDono);
+        var service = CriarService();
+
+        // Act
+        var resultado = await service.BuscarPorIdAsync(IdPedido);
+
+        // Assert
+        Assert.Equal(IdPedido, resultado.Id);
+        Assert.Equal(idDono, resultado.IdUsuario);
+        pedidos.Verify(repo => repo.BuscarPorIdAsync(IdPedido), Times.Once);
+    }
 }
