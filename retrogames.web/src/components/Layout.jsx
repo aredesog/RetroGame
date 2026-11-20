@@ -1,6 +1,29 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { obterMensagemErro } from '../api/erros'
+import useAutenticacao from '../hooks/useAutenticacao'
+import { MensagemErro } from './MensagensEstado'
 
 export default function Layout() {
+  const { usuario, carregando, estaAutenticado, ehAdministrador, sair } = useAutenticacao()
+  const navegar = useNavigate()
+  const [saindo, setSaindo] = useState(false)
+  const [erro, setErro] = useState(null)
+
+  async function encerrarSessao() {
+    setSaindo(true)
+    setErro(null)
+    try {
+      await sair()
+      navegar('/')
+    } catch (falha) {
+      if (falha.response?.status === 401) navegar('/')
+      else setErro(obterMensagemErro(falha))
+    } finally {
+      setSaindo(false)
+    }
+  }
+
   return (
     <>
       <nav className="navbar navbar-expand-md navbar-dark bg-dark">
@@ -30,12 +53,36 @@ export default function Layout() {
                   Catálogo
                 </NavLink>
               </li>
+              {ehAdministrador && (
+                <li className="nav-item dropdown">
+                  <button className="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Administração
+                  </button>
+                  <ul className="dropdown-menu">
+                    <li><button className="dropdown-item" type="button" disabled>Jogos</button></li>
+                    <li><button className="dropdown-item" type="button" disabled>Plataformas</button></li>
+                  </ul>
+                </li>
+              )}
             </ul>
+            {!carregando && (
+              estaAutenticado ? (
+                <div className="d-flex align-items-center gap-3">
+                  <span className="navbar-text">Olá, {usuario.nome}</span>
+                  <button className="btn btn-outline-light btn-sm" type="button" onClick={encerrarSessao} disabled={saindo}>
+                    {saindo ? 'Saindo...' : 'Sair'}
+                  </button>
+                </div>
+              ) : (
+                <NavLink className="nav-link text-light" to="/login">Entrar</NavLink>
+              )
+            )}
           </div>
         </div>
       </nav>
 
       <main className="container py-4 flex-grow-1">
+        {erro && estaAutenticado && <MensagemErro mensagem={erro} />}
         <Outlet />
       </main>
 
