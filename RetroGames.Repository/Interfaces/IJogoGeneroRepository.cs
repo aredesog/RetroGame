@@ -13,4 +13,7 @@ public interface IJogoGeneroRepository
 
     // Usado na alteração: apaga os vínculos antigos antes de gravar os novos.
     Task RemoverPorJogoAsync(int idJogo);
+
+    // C08: true se algum jogo (ativo ou inativo) usa o gênero. Lê só tb_jogo_genero.
+    Task<bool> ExisteJogoComGeneroAsync(int idGenero);
 }
