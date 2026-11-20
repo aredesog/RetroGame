@@ -6,6 +6,8 @@ import NaoEncontrada from './pages/NaoEncontrada.jsx'
 import Login from './pages/Login/Login.jsx'
 import RotaProtegida from './components/RotaProtegida.jsx'
 import Plataforma from './pages/Auxiliares/Plataforma.jsx'
+import Jogos from './pages/Administracao/Jogos.jsx'
+import FormularioJogo from './pages/Administracao/FormularioJogo.jsx'
 
 export default function App() {
   return (
@@ -16,9 +18,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/jogos/:id" element={<DetalheJogo />} />
         <Route path="/admin" element={<RotaProtegida somenteAdministrador />}>
-          <Route path="jogos" element={<h1>Jogos</h1>} />
-          <Route path="jogos/novo" element={<h1>Novo jogo</h1>} />
-          <Route path="jogos/:id/editar" element={<h1>Editar jogo</h1>} />
+          <Route path="jogos" element={<Jogos />} />
+          <Route path="jogos/novo" element={<FormularioJogo key="novo" />} />
+          <Route path="jogos/:id/editar" element={<FormularioJogo key="editar" />} />
           <Route path="plataformas" element={<Plataforma />} />
         </Route>
         <Route path="*" element={<NaoEncontrada />} />
