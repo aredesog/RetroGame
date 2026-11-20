@@ -8,6 +8,8 @@ public interface IUsuarioRepository
 
     Task<Usuario?> BuscarPorIdAsync(int id);
 
+    Task<List<Usuario>> ListarPorIdsAsync(IReadOnlyCollection<int> ids);
+
     Task<bool> ExisteAdministradorAsync();
 
     // Devolve o id gerado pelo banco.

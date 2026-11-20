@@ -17,6 +17,10 @@ public interface IJogoRepository
 
     Task<Jogo?> BuscarPorIdAsync(int id);
 
+    Task<List<Jogo>> ListarPorIdsAsync(IReadOnlyCollection<int> ids);
+
+    Task AlterarEstoqueAsync(int id, int novoEstoque);
+
     // Devolve o id gerado pelo banco.
     Task<int> InserirAsync(Jogo jogo);
 
