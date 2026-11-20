@@ -38,6 +38,7 @@ public static class InjecaoDependenciaConfig
         services.AddScoped<IGeneroService, GeneroService>();
         services.AddScoped<ICondicaoJogoService, CondicaoJogoService>();
         services.AddScoped<IJogoService, JogoService>();
+        services.AddScoped<IPedidoService, PedidoService>();
         services.AddScoped<IAutenticacaoService, AutenticacaoService>();
 
         // PasswordHasher não guarda estado: um único objeto serve para toda a aplicação.
