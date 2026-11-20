@@ -6,12 +6,15 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js' // necessário para o menu ab
 import './index.css'
 import App from './App.jsx'
 import AutenticacaoProvider from './contexts/AutenticacaoProvider.jsx'
+import CarrinhoProvider from './contexts/CarrinhoProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AutenticacaoProvider>
-        <App />
+        <CarrinhoProvider>
+          <App />
+        </CarrinhoProvider>
       </AutenticacaoProvider>
     </BrowserRouter>
   </StrictMode>,

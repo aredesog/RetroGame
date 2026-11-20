@@ -29,6 +29,16 @@ export const condicaoJogoApi = {
 
 export const autenticacaoApi = {
   entrar: async (dados) => (await api.post('/Autenticacao/login', dados)).data.data,
+  cadastrar: async ({ nome, email, senha }) =>
+    (await api.post('/Autenticacao/cadastrar', { nome, email, senha })).data.data,
   sair: async () => (await api.post('/Autenticacao/logout')).data.data,
   usuarioAtual: async () => (await api.get('/Autenticacao/eu')).data.data,
+}
+
+export const pedidoApi = {
+  finalizar: async (itens) => {
+    const dados = { itens: itens.map(({ idJogo, quantidade }) => ({ idJogo, quantidade })) }
+    return (await api.post('/Pedido', dados)).data.data
+  },
+  listarMeus: async () => (await api.get('/Pedido/meus')).data.data,
 }

@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { obterMensagemErro } from '../api/erros'
 import useAutenticacao from '../hooks/useAutenticacao'
+import useCarrinho from '../hooks/useCarrinho'
 import { MensagemErro } from './MensagensEstado'
 
 export default function Layout() {
   const { usuario, carregando, estaAutenticado, ehAdministrador, sair } = useAutenticacao()
+  const { quantidadeTotal } = useCarrinho()
   const navegar = useNavigate()
   const [saindo, setSaindo] = useState(false)
   const [erro, setErro] = useState(null)
@@ -53,6 +55,18 @@ export default function Layout() {
                   Catálogo
                 </NavLink>
               </li>
+              {estaAutenticado && (
+                <>
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/carrinho">
+                      Carrinho <span className="badge text-bg-light" aria-label={`${quantidadeTotal} itens`}>{quantidadeTotal}</span>
+                    </NavLink>
+                  </li>
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/meus-pedidos">Meus pedidos</NavLink>
+                  </li>
+                </>
+              )}
               {ehAdministrador && (
                 <li className="nav-item dropdown">
                   <button className="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

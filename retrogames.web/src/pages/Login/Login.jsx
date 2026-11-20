@@ -1,13 +1,18 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { obterMensagemErro } from '../../api/erros'
 import { Carregando, MensagemErro } from '../../components/MensagensEstado'
 import useAutenticacao from '../../hooks/useAutenticacao'
+import { obterDestinoInterno } from '../../lib/navegacao'
 
 export default function Login() {
   const { entrar, carregando } = useAutenticacao()
   const navegar = useNavigate()
   const [parametros] = useSearchParams()
+  const voltarPara = parametros.get('voltarPara')
+  const caminhoCadastro = voltarPara
+    ? `/cadastro?${new URLSearchParams({ voltarPara })}`
+    : '/cadastro'
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -20,11 +25,7 @@ export default function Login() {
 
     try {
       await entrar({ email: email.trim(), senha })
-      const voltarPara = parametros.get('voltarPara')
-      const destinoInterno = voltarPara?.startsWith('/') && !voltarPara.startsWith('//')
-        && !voltarPara.includes('\\')
-        && new URL(voltarPara, window.location.origin).origin === window.location.origin
-      navegar(destinoInterno ? voltarPara : '/', { replace: true })
+      navegar(obterDestinoInterno(voltarPara), { replace: true })
     } catch (falha) {
       setErro(obterMensagemErro(falha))
     } finally {
@@ -52,6 +53,7 @@ export default function Login() {
             {enviando ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
+        <p className="mt-3 mb-0">Não tem conta? <Link to={caminhoCadastro}>Cadastre-se</Link></p>
       </div>
     </div>
   )

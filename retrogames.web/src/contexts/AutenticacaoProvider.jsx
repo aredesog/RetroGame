@@ -40,6 +40,11 @@ export default function AutenticacaoProvider({ children }) {
     setUsuario(usuarioLogado)
   }
 
+  async function cadastrar(dados) {
+    const usuarioCadastrado = await autenticacaoApi.cadastrar(dados)
+    setUsuario(usuarioCadastrado)
+  }
+
   async function sair() {
     await autenticacaoApi.sair()
     setUsuario(null)
@@ -52,6 +57,7 @@ export default function AutenticacaoProvider({ children }) {
       estaAutenticado: usuario !== null,
       ehAdministrador: usuario?.perfil === 'Administrador',
       entrar,
+      cadastrar,
       sair,
     }}>
       {children}

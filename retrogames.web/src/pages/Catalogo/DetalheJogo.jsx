@@ -3,22 +3,26 @@ import { Link, useParams } from 'react-router-dom'
 import { obterMensagemErro } from '../../api/erros'
 import { jogoApi } from '../../api/servicos'
 import { Carregando, MensagemErro } from '../../components/MensagensEstado'
+import useCarrinho from '../../hooks/useCarrinho'
 import { formatarPreco } from '../../lib/formato'
 
 export default function DetalheJogo() {
   const { id } = useParams() // o número de /jogos/:id
+  const { itens, adicionar } = useCarrinho()
 
   const [jogo, setJogo] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState(null)
   const [semConexao, setSemConexao] = useState(false)
   const [tentativa, setTentativa] = useState(0)
+  const [idAdicionado, setIdAdicionado] = useState(null)
 
   useEffect(() => {
     let ignorar = false
 
     setCarregando(true)
     setErro(null)
+    setIdAdicionado(null)
 
     jogoApi
       .buscarPorId(id)
@@ -64,6 +68,8 @@ export default function DetalheJogo() {
   }
 
   const esgotado = jogo.estoque === 0
+  const itemNoCarrinho = itens.find((item) => item.idJogo === jogo.id)
+  const limiteAtingido = (itemNoCarrinho?.quantidade ?? 0) >= Math.min(10, jogo.estoque)
 
   return (
     <>
@@ -89,13 +95,32 @@ export default function DetalheJogo() {
           {jogo.descricao && <p>{jogo.descricao}</p>}
 
           <p className="h4 fw-bold mb-1">{formatarPreco(jogo.preco)}</p>
-          {esgotado ? (
-            <span className="badge text-bg-danger">Esgotado</span>
-          ) : (
-            <p className="text-muted small mb-0">
+          {!esgotado && (
+            <p className="text-muted small mb-3">
               {jogo.estoque} {jogo.estoque === 1 ? 'unidade' : 'unidades'} em estoque
             </p>
           )}
+          <button
+            className="btn btn-primary"
+            type="button"
+            disabled={esgotado || !jogo.ativo || limiteAtingido}
+            onClick={() => {
+              adicionar(jogo)
+              setIdAdicionado(jogo.id)
+            }}
+          >
+            {esgotado ? 'Esgotado' : jogo.ativo ? 'Adicionar ao carrinho' : 'Indisponível'}
+          </button>
+          {!esgotado && jogo.ativo && limiteAtingido && (
+            <p className="text-muted small mt-2 mb-0">Limite de quantidade atingido no carrinho.</p>
+          )}
+          <div role="status">
+            {idAdicionado === jogo.id && (
+              <div className="alert alert-success mt-3 mb-0">
+                Adicionado ao carrinho. <Link className="alert-link" to="/carrinho">Ver carrinho</Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
