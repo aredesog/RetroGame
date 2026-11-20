@@ -312,4 +312,70 @@ public class PedidoServiceTests
         Assert.Equal(idDono, resultado.IdUsuario);
         pedidos.Verify(repo => repo.BuscarPorIdAsync(IdPedido), Times.Once);
     }
+
+    [Fact]
+    public async Task AlterarSituacao_PedidoInexistente_LancaPedidoNaoEncontrado()
+    {
+        // Arrange
+        pedidos.Setup(repo => repo.BuscarPorIdAsync(IdPedido)).ReturnsAsync((Pedido?)null);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(
+            () => service.AlterarSituacaoAsync(IdPedido, SituacaoPedidoIds.Pago));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PEDIDO_NAO_ENCONTRADO, excecao.Erro);
+        Assert.Equal(109, excecao.Erro.Code);
+        pedidos.Verify(repo => repo.AlterarSituacaoAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarSituacao_SituacaoInexistente_LancaSituacaoNaoEncontrada()
+    {
+        // Arrange
+        const int idSituacaoInexistente = 9;
+        pedidos.Setup(repo => repo.BuscarPorIdAsync(IdPedido)).ReturnsAsync(new Pedido
+        {
+            Id = IdPedido,
+            IdUsuario = IdUsuarioLogado,
+            IdSituacaoPedido = SituacaoPedidoIds.Pendente,
+        });
+        situacoes.Setup(repo => repo.BuscarPorIdAsync(idSituacaoInexistente)).ReturnsAsync((SituacaoPedido?)null);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(
+            () => service.AlterarSituacaoAsync(IdPedido, idSituacaoInexistente));
+
+        // Assert
+        Assert.Equal(BusinessErrors.SITUACAO_NAO_ENCONTRADA, excecao.Erro);
+        Assert.Equal(112, excecao.Erro.Code);
+        pedidos.Verify(repo => repo.AlterarSituacaoAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarSituacao_Valida_Grava()
+    {
+        // Arrange
+        pedidos.Setup(repo => repo.BuscarPorIdAsync(IdPedido)).ReturnsAsync(new Pedido
+        {
+            Id = IdPedido,
+            IdUsuario = IdUsuarioLogado,
+            IdSituacaoPedido = SituacaoPedidoIds.Pendente,
+        });
+        situacoes.Setup(repo => repo.BuscarPorIdAsync(SituacaoPedidoIds.Pago))
+            .ReturnsAsync(new SituacaoPedido { Id = SituacaoPedidoIds.Pago, Descricao = "Pago" });
+        PrepararMontagem(IdUsuarioLogado);
+        var service = CriarService();
+
+        // Act
+        var resultado = await service.AlterarSituacaoAsync(IdPedido, SituacaoPedidoIds.Pago);
+
+        // Assert
+        Assert.Equal(IdPedido, resultado.Id);
+        Assert.Equal(SituacaoPedidoIds.Pago, resultado.IdSituacao);
+        Assert.Equal("Pago", resultado.DescricaoSituacao);
+        pedidos.Verify(repo => repo.AlterarSituacaoAsync(IdPedido, SituacaoPedidoIds.Pago), Times.Once);
+    }
 }
