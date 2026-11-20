@@ -10,4 +10,15 @@ public static class GeneroMapper
         Id = genero.Id,
         Nome = genero.Nome,
     };
+
+    public static Genero ParaModel(this InserirGeneroRequestApiModel request) => new()
+    {
+        Nome = request.Nome,
+    };
+
+    public static Genero ParaModel(this AlterarGeneroRequestApiModel request, int id) => new()
+    {
+        Id = id,
+        Nome = request.Nome,
+    };
 }
