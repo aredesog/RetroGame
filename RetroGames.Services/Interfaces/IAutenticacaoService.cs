@@ -10,4 +10,7 @@ public interface IAutenticacaoService
 
     // Cria o administrador inicial, mas só se ainda não existir nenhum.
     Task GarantirAdministradorInicialAsync(string email, string senha);
+
+    // C01: cria um cliente ativo, com senha em hash. E-mail já usado → EMAIL_JA_CADASTRADO (106).
+    Task<Usuario> CadastrarAsync(string nome, string email, string senha);
 }

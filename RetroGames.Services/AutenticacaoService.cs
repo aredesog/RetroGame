@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using RetroGames.Model.Constantes;
 using RetroGames.Model.Model;
 using RetroGames.Repository;
+using RetroGames.Services.Erros;
 using RetroGames.Services.Interfaces;
 
 namespace RetroGames.Services;
@@ -49,5 +50,38 @@ public class AutenticacaoService : IAutenticacaoService
         administrador.SenhaHash = passwordHasher.HashPassword(administrador, senha); // RS04: só o hash vai ao banco
 
         await repositorio.Usuario.InserirAsync(administrador);
+    }
+
+    public async Task<Usuario> CadastrarAsync(string nome, string email, string senha)
+    {
+        var emailLimpo = email.Trim();
+
+        if (await repositorio.Usuario.BuscarPorEmailAsync(emailLimpo) is not null)
+        {
+            throw new BusinessRuleException(BusinessErrors.EMAIL_JA_CADASTRADO);
+        }
+
+        var cliente = new Usuario
+        {
+            Nome = nome.Trim(),
+            Email = emailLimpo,
+            Ativo = true,
+            DataCadastro = DateTime.UtcNow,
+            IdPerfil = PerfilIds.Cliente, // o cadastro público nunca cria administrador
+        };
+        cliente.SenhaHash = passwordHasher.HashPassword(cliente, senha); // RS04: só o hash vai ao banco
+
+        try
+        {
+            cliente.Id = await repositorio.Usuario.InserirAsync(cliente);
+        }
+        catch (RegistroDuplicadoException)
+        {
+            // Dois cadastros com o mesmo e-mail ao mesmo tempo: os dois passaram pela conferência,
+            // mas o UNIQUE de ds_email barrou o segundo (erro 1062). Mesmo erro de negócio.
+            throw new BusinessRuleException(BusinessErrors.EMAIL_JA_CADASTRADO);
+        }
+
+        return cliente;
     }
 }

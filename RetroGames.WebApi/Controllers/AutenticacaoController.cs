@@ -42,6 +42,22 @@ public class AutenticacaoController : ControllerBase
         return Ok(RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>.Sucesso(ParaResponse(usuario)));
     }
 
+    // C01: única rota nova pública do módulo de compras (tabela de acesso do AGENTS.md).
+    // Cadastra o cliente e já cria o cookie de sessão, como o login.
+    [HttpPost("cadastrar")]
+    [AllowAnonymous]
+    public async Task<ActionResult<RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>>> Cadastrar(
+        [FromBody] CadastrarUsuarioRequestApiModel request)
+    {
+        var usuario = await autenticacaoService.CadastrarAsync(request.Nome, request.Email, request.Senha);
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, usuario.CriarClaimsPrincipal());
+
+        // 201 com Location apontando para GET /api/Autenticacao/eu, que agora devolve este usuário.
+        return CreatedAtAction(nameof(Eu),
+            RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>.Sucesso(ParaResponse(usuario)));
+    }
+
     // Exige login pela política padrão (FallbackPolicy): não precisa de [Authorize].
     [HttpPost("logout")]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Logout()
