@@ -38,6 +38,25 @@ public class UsuarioRepository : RepositoryBase, IUsuarioRepository
         return await leitor.ReadAsync() ? Mapear(leitor) : null;
     }
 
+    public async Task<List<Usuario>> ListarPorIdsAsync(IReadOnlyCollection<int> ids)
+    {
+        if (ids.Count == 0) return [];
+
+        await using var conexao = await AbrirConexaoAsync();
+        await using var comando = CriarComando(conexao, string.Empty);
+        var parametros = AdicionarParametrosLista(comando, "usuario", ids);
+        comando.CommandText = $"SELECT {Colunas} FROM tb_usuario WHERE co_seq_usuario IN ({parametros})";
+
+        var usuarios = new List<Usuario>();
+        await using var leitor = await comando.ExecuteReaderAsync();
+        while (await leitor.ReadAsync())
+        {
+            usuarios.Add(Mapear(leitor));
+        }
+
+        return usuarios;
+    }
+
     public async Task<bool> ExisteAdministradorAsync()
     {
         const string sql = "SELECT 1 FROM tb_usuario WHERE co_perfil = @idPerfil LIMIT 1";

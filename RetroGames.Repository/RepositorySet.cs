@@ -12,7 +12,10 @@ public class RepositorySet : IRepositorySet
         IJogoGeneroRepository jogoGenero,
         IGeneroRepository genero,
         ICondicaoJogoRepository condicaoJogo,
-        IUsuarioRepository usuario)
+        IUsuarioRepository usuario,
+        IPedidoRepository pedido,
+        IItemPedidoRepository itemPedido,
+        ISituacaoPedidoRepository situacaoPedido)
     {
         Plataforma = plataforma;
         Jogo = jogo;
@@ -20,6 +23,9 @@ public class RepositorySet : IRepositorySet
         Genero = genero;
         CondicaoJogo = condicaoJogo;
         Usuario = usuario;
+        Pedido = pedido;
+        ItemPedido = itemPedido;
+        SituacaoPedido = situacaoPedido;
     }
 
     public IPlataformaRepository Plataforma { get; }
@@ -28,4 +34,7 @@ public class RepositorySet : IRepositorySet
     public IGeneroRepository Genero { get; }
     public ICondicaoJogoRepository CondicaoJogo { get; }
     public IUsuarioRepository Usuario { get; }
+    public IPedidoRepository Pedido { get; }
+    public IItemPedidoRepository ItemPedido { get; }
+    public ISituacaoPedidoRepository SituacaoPedido { get; }
 }

@@ -69,6 +69,37 @@ public class JogoRepository : RepositoryBase, IJogoRepository
         return await leitor.ReadAsync() ? Mapear(leitor) : null;
     }
 
+    public async Task<List<Jogo>> ListarPorIdsAsync(IReadOnlyCollection<int> ids)
+    {
+        if (ids.Count == 0) return [];
+
+        await using var conexao = await AbrirConexaoAsync();
+        await using var comando = CriarComando(conexao, string.Empty);
+        var parametros = AdicionarParametrosLista(comando, "jogo", ids);
+        // Na compra, mantenha o estoque bloqueado até a transação terminar.
+        var bloqueio = System.Transactions.Transaction.Current is null ? "" : " FOR UPDATE";
+        comando.CommandText = $"SELECT {Colunas} FROM tb_jogo WHERE co_seq_jogo IN ({parametros}) ORDER BY co_seq_jogo{bloqueio}";
+
+        var jogos = new List<Jogo>();
+        await using var leitor = await comando.ExecuteReaderAsync();
+        while (await leitor.ReadAsync())
+        {
+            jogos.Add(Mapear(leitor));
+        }
+
+        return jogos;
+    }
+
+    public async Task AlterarEstoqueAsync(int id, int novoEstoque)
+    {
+        const string sql = "UPDATE tb_jogo SET qt_estoque = @estoque WHERE co_seq_jogo = @id";
+        await using var conexao = await AbrirConexaoAsync();
+        await using var comando = CriarComando(conexao, sql);
+        AdicionarParametro(comando, "@id", id);
+        AdicionarParametro(comando, "@estoque", novoEstoque);
+        await ExecutarGravacaoAsync(comando);
+    }
+
     public async Task<int> InserirAsync(Jogo jogo)
     {
         const string sql = """
